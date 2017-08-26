@@ -1,2 +1,2 @@
 # MC
-Marcov Chain in Python.
+Markov Chain in Python.
