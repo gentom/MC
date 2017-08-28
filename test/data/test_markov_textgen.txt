@@ -1,1 +1,1 @@
-The quick brown fox jumps over the brown fox who is slow jumps over the brown fox who is dead.
+Markov chain is type of Markov process that has either discrete state space or discrete index set but the precise definition of Markov chain varies.
