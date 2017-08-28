@@ -3,38 +3,61 @@
 from random import randint, random, choice
 
 class MarkovText:
-    def __init__(self, input_file):
-        self.cache = {}
-        self.input_file = input_file
-        self.words = self.file2words()
-        self.word_size = len(self.words)
-        self.database()
+		def __init__(self, input_file, chain_size=3):
+			self.chain_size = chain_size
+			self.cache = {}
+			self.input_file = input_file
+			self.words = self.file2words()
+			self.word_size = len(self.words)
+			self.database()
+		
 
-    def file2words(self):
-        self.input_file.seek(0)
-        data = self.input_file.read()
+		def file2words(self):
+			self.input_file.seek(0)
+			data = self.input_file.read()
+			words = data.split()
+			return words
 
-    def split2triples(self):
-        if len(self.words) < 3:
-            return
-        for i in range(len(self.words)-2):
-            yield (self.words[i], self.words[i+1], self.words[i+2])
+		def words_at_position(self, i):
+			"""Uses the chain size to find a list of the words at an index."""
+			chain = []
+			for chain_index in range(0, self.chain_size):
+				chain.append(self.words[i + chain_index])
+			return chain
 
-    def database(self):
-        for w1, w2, w3 in self.split2triples():
-            key = (w1, w2)
-            if key in self.cache:
-                self.cache[key].append(w3)
-            else:
-                self.cache[key] = w3
+		def chain(self):
+			"""Generates chains from the given data string based on passed chain size.
+			So if our string were:
+				"What a lovely day"
+			With a chain size of 3, we'd generate:
+				(What, a, lovely)
+			and
+				(a, lovely, day)
+			"""
 
-    def text_generator(self, size=25):
-        seed = randint(0, self.word_size-3)
-        seed_word, next_word = self.words[seed], self.words[seed+1]
-        w1, w2 = seed_word, next_word
-        generating_words = []
-        for i in range(size):
-            generating_words.append(w1)
-            w1, w2 = w2, choice(self.cache[(w1,w2)])
-        generating_words.append(w2)
-        return ' '.join(generating_words)
+			if len(self.words) < self.chain_size:
+				return
+
+			for i in range(len(self.words) - self.chain_size - 1):
+				yield tuple(self.words_at_position(i))
+
+		def database(self):
+			for chain_set in self.chain():
+				key = chain_set[:self.chain_size - 1]
+				next_word = chain_set[-1]
+				if key in self.cache:
+					self.cache[key].append(next_word)
+				else:
+					self.cache[key] = [next_word]
+
+		def text_generator(self, size=25):
+			seed = randint(0, self.word_size - 3)
+			gen_words = []
+			seed_words = self.words_at_position(seed)[:-1]
+			gen_words.extend(seed_words)
+			for i in range(size):
+				last_word_len = self.chain_size - 1
+				last_words = gen_words[-1 * last_word_len:]
+				next_word = choice(self.cache[tuple(last_words)])
+				gen_words.append(next_word)
+			return ' '.join(gen_words)
