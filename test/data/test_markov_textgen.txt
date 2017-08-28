@@ -1,1 +1,1 @@
-Markov chain is type of Markov process that has either discrete state space or discrete index set but the precise definition of Markov chain varies.
+Markov chain is a type of Markov process that has either discrete state space or discrete index set but the precise definition of Markov chain varies.
